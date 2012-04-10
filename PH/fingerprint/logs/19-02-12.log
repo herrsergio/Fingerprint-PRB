@@ -1,0 +1,5 @@
+emp_num=BR in_out=IN empname= timein1= timeout1= timein2= timeout2=
+
+Gdk-WARNING **: locale not supported by C library
+Xdialog: Error initializing the GUI...
+Do you run under X11 with GTK+ v1.2.0+ installed ?
