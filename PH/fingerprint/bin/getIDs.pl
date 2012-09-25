@@ -32,8 +32,12 @@ sub parse_ids {
 
     chomp($today);
 
-    $num_records = 1;
+    $num_records = 0;
     $options1 = "action=run&sdate=$today&edate=$today&";
+
+    @UIDS=`grep -i checkbox $file  \| perl -ane 'print "\$F[4]\n";' \| cut -d'=' -f2 \| cut -d'>' -f1`;
+
+    #print @UIDS;
 
     foreach $line (@array) {
         chomp($line);
@@ -43,7 +47,8 @@ sub parse_ids {
             #print "line2 = $line\n";
             @info = split ( ',', $line );
             if( $display == 0 ) {
-                $options = $options1 . "uid=$num_records";
+	        chomp($UIDS[$num_records]);
+                $options = $options1 . "uid=$UIDS[$num_records]";
                 print "$options\n";
                 $num_records++;
 			} else {

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+CONF="/usr/bin/ph/fingerprint/etc/fingerprint.conf"
+source $CONF
+
 PATH=$PATH:/usr/bin/ph/emplalt/bin
 
 date=`date +%Y-%m-%d`
@@ -8,9 +11,11 @@ ACTIVE_USERS_FMS="/usr/bin/ph/fingerprint/data/users_fms.txt"
 USERS_FP="/usr/bin/ph/fingerprint/data/users_fp.txt"
 
 JMAIL="/usr/bin/ph/jmail.s"
-SENDER="mx"`/usr/bin/ph/unit.s`"r"
 WGET="/usr/bin/wget"
 URL="http://poleo.yum.com.mx/sisdevel/fingerprint"
+HOST=`hostname`
+STORE_ID=${HOST:2:3}
+SENDER="mx"${HOST:1:4}"r"
 MAILS_FILE="${STORE_ID}.txt"
 
 if [ -s /tmp/fp_mails.txt ]; then
@@ -41,11 +46,24 @@ FMS=`ls -t /usr/bin/ph/emplalt/dat/*.ok | head -n1`
 
 cut -d\| -f6  ${FMS} | sort  > ${ACTIVE_USERS_FMS}
 
+/usr/local/bin/curl -sS http://${IP}/csl/login | grep -i password
+
+if [ $? -eq 1 ]; then
+    exit 1
+fi
+
 /usr/bin/ph/fingerprint/bin/getRegUserFP.sh $date > ${USERS_FP}
+
+if [ ! -s ${USERS_FP} ]; then
+    MSG="No se pudo descargar la lista de usuarios del lector"    
+    DESTS="sergio.cuellar"
+    $JMAIL "${SENDER}" "${DESTS}" "${SUBJ}" "${MSG}"
+    exit 1
+fi
 
 UNREGISTERED_IN_FP=`comm -23 ${ACTIVE_USERS_FMS} ${USERS_FP}`
 
-if [ ! -z ${UNREGISTERED_IN_FP} ]; then
+if [ ! -z "${UNREGISTERED_IN_FP}" ]; then
     if [ -e /tmp/mailfp.txt ]; then
         /bin/rm /tmp/mailfp.txt
     fi

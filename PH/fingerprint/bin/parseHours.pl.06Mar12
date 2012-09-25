@@ -119,91 +119,6 @@ sub fill_hrcempl_data {
 
 }
 
-sub fill_hrcempl_data_dawn {
-    my ( $emp_id, $time_in, $time_out, $date_id, $pt ) = @_;
-    
-    $todayAAMMDD = substr($date_id, 2, 8);
-    chomp( $todayAAMMDD );
-    $timeout1 = "20".$todayAAMMDD . " " . $dawn_hour;
-    $dant = `/usr/bin/ph/dant.s $todayAAMMDD`;
-    chomp( $dant );
-    $dant20 = "20". $dant;
-
-    if ( $time_out eq "" ) {
-        $action = "TI";
-        $logger->info("Action = $action");
-
-        if ( $pt == 1 ) {
-            $query = $dbh->prepare(
-"SELECT extract(epoch FROM timein1) FROM pp_emp_check where date_id='$date_id' AND emp_num='$emp_id'"
-            );
-        }
-        else {
-            $query = $dbh->prepare(
-"SELECT extract(epoch FROM timein2) FROM pp_emp_check where date_id='$date_id' AND emp_num='$emp_id'"
-            );
-        }
-        $query->execute();
-        $time_in_epoch = $query->fetchrow();
-    }
-    else {
-        $action = "TO";
-        $logger->info("Action = $action");
-
-        if ( $pt == 1 ) {
-            $query = $dbh->prepare(
-"SELECT extract(epoch FROM timeout1) FROM pp_emp_check where date_id='$dant20' AND emp_num='$emp_id'"
-            );
-        }
-        else {
-            $query = $dbh->prepare(
-"SELECT extract(epoch FROM timeout2) FROM pp_emp_check where date_id='$dant20' AND emp_num='$emp_id'"
-            );
-        }
-        $query->execute();
-        $time_out_epoch = $query->fetchrow();
-    }
-
-    #print "emp_id: $emp_id, time_in: $time_in, time_out: $time_out\n";
-
-    #$action = "TI";
-
-    open( COMM,
-        "/usr/bin/ph/emplalt/bin/emplshowdata.s /usr/fms/data/hrcempl.dat |" );
-    while (<COMM>) {
-
-        #chomp($_);
-        #chop($_);
-        $data       = $_;
-        @info       = split( /\|/, $data );
-        $emp_name   = $info[0];
-        $emp_num    = $info[1];
-        $emp_rfc    = $info[2];
-        $emp_dpt    = $info[3];
-        $emp_puesto = $info[4];
-        chop($emp_puesto);
-
-        if ( $emp_num eq $emp_id ) {
-            if ( $action eq "TI" ) {
-`/usr/bin/ph/fingerprint/bin/clock_employee.sh $emp_num $emp_rfc $emp_dpt $emp_puesto $action $time_in_epoch`;
-               # print
-#"/usr/bin/ph/fingerprint/bin/clock_employee.sh $emp_num $emp_rfc $emp_dpt $emp_puesto $action $time_in_epoch\n";
-                $logger->info("Ejecutando: /usr/bin/ph/fingerprint/bin/clock_employee.sh $emp_num $emp_rfc $emp_dpt $emp_puesto $action $time_in_epoch");
-            }
-            else {
-`/usr/bin/ph/fingerprint/bin/clock_employee.sh $emp_num $emp_rfc $emp_dpt $emp_puesto $action $time_out_epoch`;
-                #print
-#"/usr/bin/ph/fingerprint/bin/clock_employee.sh $emp_num $emp_rfc $emp_dpt $emp_puesto $action $time_out_epoch\n";
-                $logger->info("Ejecutando: /usr/bin/ph/fingerprint/bin/clock_employee.sh $emp_num $emp_rfc $emp_dpt $emp_puesto $action $time_out_epoch");
-            }
-            last;
-        }
-
-    }
-    close(COMM);
-
-}
-
 sub diff_hours {
     my ( $t1, $t2 ) = @_;
     $time1 = Time::Simple->new($t1);
@@ -325,7 +240,8 @@ sub parse_hours {
                     $logger->info("Query: UPDATE pp_emp_check SET timeout1 = timestamp '$timeout1'  WHERE date_id = '$dant20' AND emp_num = '$the_id'");
                     $query->execute();
                     # LLenar registro en FMS
-                    fill_hrcempl_data_dawn( $the_id, "", $timeout1, $today, 1 );
+                    fill_hrcempl_data( $the_id, "", $timeout1, $today, 1 );
+
                 }
             } 
         }

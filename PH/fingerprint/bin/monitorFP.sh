@@ -18,6 +18,7 @@ if [ $count -eq 0 ]; then
     MSG="Conectividad con dispositivo fingerprint nula `date`"
     SUBJ="Conectividad con fingerprint en centro ${CC} nula"
     ${JMAIL} "${SENDER}" "${DESTS}" "${SUBJ}" "${MSG}"
+    exit 1
 fi
 
 /usr/local/bin/curl -sS http://${IP}/csl/login | grep -i password

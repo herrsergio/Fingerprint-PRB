@@ -60,11 +60,11 @@ function get_data() {
 
 SOD=`/usr/fms/op/bin/phconfg -n9 -g`
 
-if [ $SOD -eq 2 ]; then
+#if [ $SOD -eq 2 ]; then
 
     get_cookie
 
     get_ids_page
 
     get_data
-fi
+#fi

@@ -53,18 +53,18 @@ function get_data() {
         ${CURL} -s --cookie ${COOKIE_FILE} -G -d "${PARMS}" ${ROOTURL}/csl/query \
             -o $OUTPUT_FILE	
         #links $OUTPUT_FILE
-        perl  /usr/bin/ph/fingerprint/bin/parseHours.pl ${OUTPUT_FILE} ${FECHA}
+        perl /usr/bin/ph/fingerprint/bin/parseHours.pl ${OUTPUT_FILE} ${FECHA}
         sleep 2
     done
 }
 
 SOD=`/usr/fms/op/bin/phconfg -n9 -g`
 
-if [ $SOD -eq 2 ]; then
+#if [ $SOD -eq 2 ]; then
 
     get_cookie
 
     get_ids_page
 
     get_data
-fi
+#fi
