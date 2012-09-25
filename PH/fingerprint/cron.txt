@@ -1,0 +1,28 @@
+### @(#) fms.delco.d 4.1.2.4 93/01/08 14:19:37
+### Backup Procedures
+#0 5 * * 1	/etc/sushell /usr/fms/etc/sysbkup SYSTEM /mnt >/dev/null 2>&1
+### SUS Procedures
+0 4 * * 1-5	/etc/sushell /usr/fms/etc/syssus "ulimit 1000000; nice -19 /usr/fms/op/bin/phsel.s"
+0 5 * * 0,6	/etc/sushell /usr/fms/etc/syssus "ulimit 1000000; nice -19 /usr/fms/op/bin/phsel.s"
+0,30 * * * *	/etc/sushell /usr/fms/etc/syssus "/usr/fms/op/bin/phrunstuff.s"
+30 2 * * *	/etc/sushell /usr/fms/etc/syssus "ulimit 1000000; /usr/fms/op/bin/phrpt.s -e" > /tmp/phrpt.log 2>&1
+48 17 * * *	/etc/sushell /usr/fms/etc/syssus "ulimit 1000000; /tmp/xx.s" 
+##### Mexico
+##### Poll & Pay
+05 2 * * 0	/etc/sushell /bin/ksh -c "/usr/bin/ph/sdc_deh/gen_pp.s -p"
+0 2 * * *	touch /tmp/gen_pp.tmp; /usr/bin/ph/sdc_deh/gen_pp.s
+##### Actualizacion GMPH
+#0 8 * * 4 /usr/fms/admin/.set_ver.s
+0 9 * * 4       /etc/sushell /usr/fms/etc/syssus "/usr/bin/ph/limpiar.s"
+#####Borra transacciones con error todos los dias a las 5:58 am
+58 5 * * *	/etc/sushell /usr/fms/etc/syssus "/usr/bin/ph/tkdeltrn.s >/dev/null 2>&1"
+#####Cierre semanal de nomina los domingos a las 6:00 a.m.
+0 6 * * 0	/etc/sushell /usr/fms/etc/syssus "/usr/bin/ph/tkclspay.s >/dev/null 2>&1"
+##### Monitoreo de fingerprint
+*/15 7-23 * * * /usr/bin/ph/fingerprint/bin/monitorFP.sh
+*/15 0-3 * * * /usr/bin/ph/fingerprint/bin/monitorFP.sh
+##### Cron fingerprint
+*/8 7-23 * * * /etc/sushell /usr/fms/etc/syssus "/usr/bin/ph/fingerprint/bin/fingerprint_cron.sh"
+*/8 0-3 * * * /etc/sushell /usr/fms/etc/syssus "/usr/bin/ph/fingerprint/bin/fingerprint_cron.sh"
+# Listas de usuarios en FMS y Fingerprint
+0 14 * * * /usr/bin/ph/fingerprint/bin/get_users_lists.sh
